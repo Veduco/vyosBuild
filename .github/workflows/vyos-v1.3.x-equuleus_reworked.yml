@@ -54,3 +54,5 @@ jobs:
         id: get-relver
         run: echo ::set-output name=RELEASE_VERSION::${{ steps.get-version.outputs.CODE_VERSION }}-${{ github.event.inputs.branch }}
 # steps.get-relver.outputs.RELEASE_VERSION
+      - name: Checkout
+        uses: actions/checkout@v2
