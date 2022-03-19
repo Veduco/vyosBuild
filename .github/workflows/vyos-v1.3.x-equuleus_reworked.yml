@@ -148,3 +148,31 @@ jobs:
         with:
           name: vyos-${{ steps.set-build-names.outputs.VERSION_STRING }}-${{ env.BUILD_ARCH }}-images
           path: ${{ env.WORKING_DIR }}/${{ env.ARTIFACTS_DIR }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: vyos-${{ steps.set-build-names.outputs.VERSION_STRING }}-${{ env.BUILD_ARCH }}-images
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          #name: VyOS v${{ env.BUILD_VERSION }} LTS Release
+          #body: VyOS v${{ env.BUILD_VERSION }} LTS Release
+          tag: ${{ steps.get-relver.outputs.RELEASE_VERSION }}-${{ env.COMMIT_ID }}
+          draft: false
+          prerelease: false
+          files: |
+            vyos-${{ steps.set-build-names.outputs.VERSION_STRING }}-${{ env.BUILD_ARCH }}.iso
+            vyos-${{ steps.set-build-names.outputs.VERSION_STRING }}-${{ env.BUILD_ARCH }}-qemu.img
+            vyos-${{ steps.set-build-names.outputs.VERSION_STRING }}-${{ env.BUILD_ARCH }}-qemu.qcow2
+            vyos-${{ steps.set-build-names.outputs.VERSION_STRING }}-${{ env.BUILD_ARCH }}-hyperv.vhd
+            vyos-${{ steps.set-build-names.outputs.VERSION_STRING }}-${{ env.BUILD_ARCH }}-vmware-signed.ova
+            vyos-${{ steps.set-build-names.outputs.VERSION_STRING }}-${{ env.BUILD_ARCH }}-vmware.vmdk
