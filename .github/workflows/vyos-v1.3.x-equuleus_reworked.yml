@@ -50,3 +50,7 @@ jobs:
           if [ ${{ github.event.inputs.branch }} == "crux" ]; then echo ::set-output name=CODE_VERSION::1.2; fi
           if [ ${{ github.event.inputs.branch }} == "equuleus" ]; then echo ::set-output name=CODE_VERSION::1.3; fi
           if [ ${{ github.event.inputs.branch }} == "current" ]; then echo ::set-output name=CODE_VERSION::1.4; fi
+      - name: Set Release Version
+        id: get-relver
+        run: echo ::set-output name=RELEASE_VERSION::${{ steps.get-version.outputs.CODE_VERSION }}-${{ github.event.inputs.branch }}
+# steps.get-relver.outputs.RELEASE_VERSION
