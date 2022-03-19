@@ -1,0 +1,86 @@
+name: VyOS v1.3.x LTS Release
+
+#on:
+#  push:
+#    tags:
+#      - 'v1.3.*'
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        type: choice
+        description: Select the VyOS branch to build from
+        options: 
+        - equuleus
+        - current
+        - crux
+      commit:
+        description: SHA1 Commit
+
+env:
+  GIT_CLONE_URL: https://github.com/vyos/vyos-build
+  DEBIAN_MIRROR: http://ftp.us.debian.org/debian/
+  #BRANCH: equuleus
+  BUILD_ARCH: amd64
+  BUILD_BY: Veduco
+  BUILD_TYPE: release
+  #BUILD_VERSION: 1.3.0
+  BUILD_QEMU: false
+  BUILD_QCOW2: false
+  BUILD_HYPERV: false
+  BUILD_VMWARE: false
+  PACKER_JSON_PATCH: false
+  PACKER_JSON_PATCH_FILE: packer.json_wait-time_equuleus.patch
+  VMWARE_OVFTOOL: VMware-ovftool-4.4.3-18663434-lin.x86_64.bundle
+  VMWARE_PRIVATE_KEY: private_key_for_signing_vmware_image.pem
+  ARTIFACTS_DIR: artifacts
+  WORKING_DIR: vyos-build
+  STATUS_SUCCESS: "::set-output name=status::success"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    container:
+      image: vyos/vyos-build:equuleus
+      options: --workdir /vyos --privileged
+
+    steps:
+      - name: Get Version Number
+        id: get-version
+        if: contains(,'crux')
+        #run: echo "CODE_VERSION=1.2" >> $GITHUB_ENV
+        run: |
+          if [ ${{ github.event.inputs.branch }} == "crux" ]; then echo ::set-output name=CODE_VERSION::1.2; fi
+          if [ ${{ github.event.inputs.branch }} == "equuleus" ]; then echo ::set-output name=CODE_VERSION::1.3; fi
+          if [ ${{ github.event.inputs.branch }} == "current" ]; then echo ::set-output name=CODE_VERSION::1.4; fi
+
+# steps.get-version.outputs.CODE_VERSION
+
+#      - name: Decipher version number Equuleus
+#        if: contains(github.event.inputs.branch,'equuleus')
+#        run: echo "CODE_VERSION=1.3" >> $GITHUB_ENV
+
+#      - name: Decipher version number Sagitta
+#        if: contains(github.event.inputs.branch,'current')
+#        run: echo "CODE_VERSION=1.4" >> $GITHUB_ENV
+
+      - name: Set Release Version
+        id: get-relver
+        run: |
+          echo ::set-output name=RELEASE_VERSION::${{ steps.get-version.outputs.CODE_VERSION }}-${{ github.event.inputs.branch }}
+# steps.get-relver.outputs.RELEASE_VERSION
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Clone Source Code
+        run: |
+          git clone -b ${{ github.event.inputs.branch }} --single-branch $GIT_CLONE_URL $WORKING_DIR
+
+      - name: Checkout Specific Commit
+        working-directory: ./${{ env.WORKING_DIR }}
+        run: |
+          pwd
+          cd $WORKING_DIR
+          git checkout ${{ github.event.inputs.commit }}
