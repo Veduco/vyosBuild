@@ -64,5 +64,4 @@ jobs:
         run: |
           pwd
           ls -al
-#cd $WORKING_DIR
           git checkout ${{ github.event.inputs.commit }}
