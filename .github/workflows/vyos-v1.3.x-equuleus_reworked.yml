@@ -52,11 +52,12 @@ jobs:
           if [ ${{ github.event.inputs.branch }} == "crux" ]; then echo ::set-output name=CODE_VERSION::1.2; fi
           if [ ${{ github.event.inputs.branch }} == "equuleus" ]; then echo ::set-output name=CODE_VERSION::1.3; fi
           if [ ${{ github.event.inputs.branch }} == "current" ]; then echo ::set-output name=CODE_VERSION::1.4; fi
-
+#steps.get-version.outputs.CODE_VERSION
+ 
       - name: Set Release Version
         id: get-relver
         run: echo ::set-output name=RELEASE_VERSION::${{ steps.get-version.outputs.CODE_VERSION }}-${{ github.event.inputs.branch }}
-# steps.get-relver.outputs.RELEASE_VERSION
+#steps.get-relver.outputs.RELEASE_VERSION
 
       - name: Checkout
         uses: actions/checkout@v2
@@ -74,15 +75,16 @@ jobs:
         id: set-build-names
         working-directory: ./${{ env.WORKING_DIR }}
         run: |
-          pwd
           export SHA1=$(git rev-parse --short HEAD)
           export VERSION_STRING="${{ steps.get-relver.outputs.RELEASE_VERSION }}-${SHA1}"
           ./configure --architecture $BUILD_ARCH --build-by $BUILD_BY --build-type $BUILD_TYPE --version $VERSION_STRING
           mkdir -p ./$ARTIFACTS_DIR
           echo ::set-output name=VERSION_STRING::${{ steps.get-relver.outputs.RELEASE_VERSION }}-${SHA1}
-#echo ::set-output name=COMMIT_ID::${SHA1}
+          echo ::set-output name=COMMIT_ID::${SHA1}
+
 #echo "COMMIT_ID=${SHA1}" >> $GITHUB_ENV
 #echo "VERSION_STRING=${{ steps.get-relver.outputs.RELEASE_VERSION }}-${SHA1}">> $GITHUB_ENV
+
 #steps.set-build-names.outputs.COMMIT_ID
 #steps.set-build-names.outputs.VERSION_STRING
 
@@ -91,7 +93,13 @@ jobs:
         run: |
           echo "VERSION_STRING=${{ steps.set-build-names.outputs.VERSION_STRING }}" >> $GITHUB_ENV
           echo "RELEASE_VERSION=${{ steps.get-relver.outputs.RELEASE_VERSION }}" >> $GITHUB_ENV
-#echo COMMIT_ID: ${{ steps.set-build-names.outputs.COMMIT_ID }}
+          echo "COMMIT_ID=${{ steps.set-build-names.outputs.COMMIT_ID }}" >> $GITHUB_ENV
+          echo "CODE_VERSION=${{ steps.get-version.outputs.CODE_VERSION }}" >> $GITHUB_ENV
+### Example
+### BRANCH: equuleus
+### VERSION_STRING: 1.3-equuleus-b381eb2
+### RELEASE_VERSION: 1.3-equuleus
+
 
       - name: Build ISO Image
         id: iso
@@ -162,9 +170,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          #name: VyOS v${{ env.BUILD_VERSION }} LTS Release
-          #body: VyOS v${{ env.BUILD_VERSION }} LTS Release
-          tag: ${{ steps.get-relver.outputs.RELEASE_VERSION }}-${{ env.COMMIT_ID }}
+          name: VyOS v${{ env.CODE_VERSION }} [${{ env.COMMIT_ID }}]
+          #body: VyOS v${{ env.CODE_VERSION }} [${{ env.COMMIT_ID }}]
+          tag: ${{ env.RELEASE_VERSION }}-${{ env.COMMIT_ID }}
           draft: false
           prerelease: false
           files: |
