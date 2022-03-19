@@ -56,3 +56,6 @@ jobs:
 # steps.get-relver.outputs.RELEASE_VERSION
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Clone Source Code
+        run: |
+          git clone -b ${{ github.event.inputs.branch }} --single-branch $GIT_CLONE_URL $WORKING_DIR
