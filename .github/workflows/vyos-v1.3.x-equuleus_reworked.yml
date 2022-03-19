@@ -48,7 +48,6 @@ jobs:
     steps:
       - name: Get Version Number
         id: get-version
-        if: contains(,'crux')
         #run: echo "CODE_VERSION=1.2" >> $GITHUB_ENV
         run: |
           if [ ${{ github.event.inputs.branch }} == "crux" ]; then echo ::set-output name=CODE_VERSION::1.2; fi
