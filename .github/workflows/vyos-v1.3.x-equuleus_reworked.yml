@@ -81,5 +81,31 @@ jobs:
         working-directory: ./${{ env.WORKING_DIR }}
         run: |
           pwd
-          cd $WORKING_DIR
+          ls -al
+        #cd $WORKING_DIR
           git checkout ${{ github.event.inputs.commit }}
+
+      - name: Set Build Names
+        id: set-build-names
+        working-directory: ./${{ env.WORKING_DIR }}
+        run: |
+          pwd
+          export SHA1=$(git rev-parse --short HEAD)
+          export VERSION_STRING="${{ steps.get-relver.outputs.RELEASE_VERSION }}-${SHA1}"
+        #echo "COMMIT_ID=${SHA1}" >> $GITHUB_ENV
+        #echo "VERSION_STRING=${{ steps.get-relver.outputs.RELEASE_VERSION }}-${SHA1}">> $GITHUB_ENV
+          ./configure --architecture $BUILD_ARCH --build-by $BUILD_BY --build-type $BUILD_TYPE --version $VERSION_STRING
+          mkdir -p ./$ARTIFACTS_DIR
+          echo ::set-output name=COMMIT_ID::${SHA1}
+          echo ::set-output name=VERSION_STRING::${{ steps.get-relver.outputs.RELEASE_VERSION }}-${SHA1}
+
+#steps.set-build-names.outputs.COMMIT_ID
+#steps.set-build-names.outputs.VERSION_STRING
+
+      - name: Build ISO Image
+        id: iso
+        working-directory: ./${{ env.WORKING_DIR }}
+        run: |
+          make iso && echo $STATUS_SUCCESS
+          cp -f ./build/vyos-${{ steps.set-build-names.outputs.VERSION_STRING }}-$BUILD_ARCH.iso ./$ARTIFACTS_DIR/
+         #cp -f ./build/vyos-*-$BUILD_ARCH.iso ./$ARTIFACTS_DIR/
