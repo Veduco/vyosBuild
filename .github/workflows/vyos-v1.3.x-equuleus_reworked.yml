@@ -65,3 +65,18 @@ jobs:
           pwd
           ls -al
           git checkout ${{ github.event.inputs.commit }}
+      - name: Set Build Names
+        id: set-build-names
+        working-directory: ./${{ env.WORKING_DIR }}
+        run: |
+          pwd
+          export SHA1=$(git rev-parse --short HEAD)
+          export VERSION_STRING="${{ steps.get-relver.outputs.RELEASE_VERSION }}-${SHA1}"
+          ./configure --architecture $BUILD_ARCH --build-by $BUILD_BY --build-type $BUILD_TYPE --version $VERSION_STRING
+          mkdir -p ./$ARTIFACTS_DIR
+          echo ::set-output name=COMMIT_ID::${SHA1}
+          echo ::set-output name=VERSION_STRING::${{ steps.get-relver.outputs.RELEASE_VERSION }}-${SHA1}
+#echo "COMMIT_ID=${SHA1}" >> $GITHUB_ENV
+#echo "VERSION_STRING=${{ steps.get-relver.outputs.RELEASE_VERSION }}-${SHA1}">> $GITHUB_ENV
+#steps.set-build-names.outputs.COMMIT_ID
+#steps.set-build-names.outputs.VERSION_STRING
