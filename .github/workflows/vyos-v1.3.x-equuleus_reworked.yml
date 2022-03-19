@@ -59,3 +59,10 @@ jobs:
       - name: Clone Source Code
         run: |
           git clone -b ${{ github.event.inputs.branch }} --single-branch $GIT_CLONE_URL $WORKING_DIR
+      - name: Checkout Specific Commit
+        working-directory: ./${{ env.WORKING_DIR }}
+        run: |
+          pwd
+          ls -al
+#cd $WORKING_DIR
+          git checkout ${{ github.event.inputs.commit }}
