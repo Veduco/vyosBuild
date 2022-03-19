@@ -86,13 +86,11 @@ jobs:
 #steps.set-build-names.outputs.COMMIT_ID
 #steps.set-build-names.outputs.VERSION_STRING
 
-      - name: Debug Print
+      - name: Set Environment Names
         working-directory: ./${{ env.WORKING_DIR }}
         run: |
-          echo Show important strings
-          echo BRANCH: ${{ github.event.inputs.branch }}
-          echo VERSION_STRING: ${{ steps.set-build-names.outputs.VERSION_STRING }}
-          echo RELEASE_VERSION: ${{ steps.get-relver.outputs.RELEASE_VERSION }}
+          echo "VERSION_STRING=${{ steps.set-build-names.outputs.VERSION_STRING }}" >> $GITHUB_ENV
+          echo "RELEASE_VERSION=${{ steps.get-relver.outputs.RELEASE_VERSION }}" >> $GITHUB_ENV
 #echo COMMIT_ID: ${{ steps.set-build-names.outputs.COMMIT_ID }}
 
       - name: Build ISO Image
@@ -157,7 +155,7 @@ jobs:
       - name: Download Artifacts
         uses: actions/download-artifact@v2
         with:
-          name: vyos-${{ steps.set-build-names.outputs.VERSION_STRING }}-${{ env.BUILD_ARCH }}-images
+          name: vyos-${{ env.VERSION_STRING }}-${{ env.BUILD_ARCH }}-images
 
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -170,9 +168,9 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            vyos-${{ steps.set-build-names.outputs.VERSION_STRING }}-${{ env.BUILD_ARCH }}.iso
-            vyos-${{ steps.set-build-names.outputs.VERSION_STRING }}-${{ env.BUILD_ARCH }}-qemu.img
-            vyos-${{ steps.set-build-names.outputs.VERSION_STRING }}-${{ env.BUILD_ARCH }}-qemu.qcow2
-            vyos-${{ steps.set-build-names.outputs.VERSION_STRING }}-${{ env.BUILD_ARCH }}-hyperv.vhd
-            vyos-${{ steps.set-build-names.outputs.VERSION_STRING }}-${{ env.BUILD_ARCH }}-vmware-signed.ova
-            vyos-${{ steps.set-build-names.outputs.VERSION_STRING }}-${{ env.BUILD_ARCH }}-vmware.vmdk
+            vyos-${{ env.VERSION_STRING }}-${{ env.BUILD_ARCH }}.iso
+            vyos-${{ env.VERSION_STRING }}-${{ env.BUILD_ARCH }}-qemu.img
+            vyos-${{ env.VERSION_STRING }}-${{ env.BUILD_ARCH }}-qemu.qcow2
+            vyos-${{ env.VERSION_STRING }}-${{ env.BUILD_ARCH }}-hyperv.vhd
+            vyos-${{ env.VERSION_STRING }}-${{ env.BUILD_ARCH }}-vmware-signed.ova
+            vyos-${{ env.VERSION_STRING }}-${{ env.BUILD_ARCH }}-vmware.vmdk
