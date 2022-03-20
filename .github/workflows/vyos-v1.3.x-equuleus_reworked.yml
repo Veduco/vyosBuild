@@ -25,9 +25,6 @@ on:
       BUILD_QEMU:
         type: boolean
         description: Build QEMU
-      BUILD_QCOW2:
-        type: boolean
-        description: Build QCOW2
       BUILD_HYPERV:
         type: boolean
         description: Build HyperV
@@ -52,7 +49,8 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+#    runs-on: ubuntu-latest
+    runs-on: [self-hosted]
     container:
       image: vyos/vyos-build:equuleus
       options: --workdir /vyos --privileged
@@ -61,16 +59,16 @@ jobs:
 
       - name: Check Image Dependencies
         run: |
-          if [ ${{ github.event.inputs.BUILD_QCOW2 }} == "true" ] || [ ${{ github.event.inputs.BUILD_HYPERV }} == "true" ] || [ ${{ github.event.inputs.BUILD_VMWARE }} == "true" ]
+          if [ ${{ github.event.inputs.BUILD_HYPERV }} == "true" ] || [ ${{ github.event.inputs.BUILD_VMWARE }} == "true" ]
             then
             echo "BUILD_QEMU=true" | tee -a $GITHUB_ENV
           else
             echo "BUILD_QEMU=${{ github.event.inputs.BUILD_QEMU }}" | tee -a $GITHUB_ENV  
           fi
-          echo "BUILD_QCOW2=${{ github.event.inputs.BUILD_QCOW2 }}"    | tee -a $GITHUB_ENV
           echo "BUILD_HYPVERV=${{ github.event.inputs.BUILD_HYPERV }}" | tee -a $GITHUB_ENV
           echo "BUILD_VMWARE=${{ github.event.inputs.BUILD_VMWARE }}"  | tee -a $GITHUB_ENV
 #if [ ${{ github.event.inputs. }} ]; then echo "" | tee -a $GITHUB_ENV; fi
+#echo "BUILD_QCOW2=${{ github.event.inputs.BUILD_QCOW2 }}"    | tee -a $GITHUB_ENV
 
       - name: Get Version Number
         id: get-version
@@ -184,7 +182,8 @@ jobs:
 
   release:
     needs: build
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs-on: [self-hosted]
 
     steps:
       - name: Download Artifacts
