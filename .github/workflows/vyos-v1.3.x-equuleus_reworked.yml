@@ -1,4 +1,4 @@
-name: VyOS v1.3.x LTS Release
+name: VyOS Release
 
 #on:
 #  push:
@@ -18,16 +18,16 @@ on:
         description: SHA1 Commit
       BUILD_QEMU:
         type: boolean
-        description: Build QEMU Image?
+        description: Build QEMU
       BUILD_QCOW2:
         type: boolean
-        description: Build QCOW2 Image?
+        description: Build QCOW2
       BUILD_HYPERV:
         type: boolean
-        description: Build HyperV Image?
+        description: Build HyperV
       BUILD_VMWARE:
         type: boolean
-        description: Build VMWare Image?
+        description: Build VMWare
 
 env:
   GIT_CLONE_URL: https://github.com/vyos/vyos-build
@@ -60,18 +60,15 @@ jobs:
 
       - name: Check Image Dependencies
         run: |
-          QEMU=false
-          QCOW2=false
-          HYPVERV=false
-          VMWARE=false
-          if [ ! -z ${{ github.event.inputs.BUILD_QCOW2 }}  ]; then QCOW2=${{ github.event.inputs.BUILD_QCOW2 }}; fi
-          if [ ! -z ${{ github.event.inputs.BUILD_HYPERV }} ]; then HYPVERV=${{ github.event.inputs.BUILD_HYPERV }}; fi
-          if [ ! -z ${{ github.event.inputs.BUILD_VMWARE }} ]; then VMWARE=${{ github.event.inputs.BUILD_VMWARE }}; fi
-          if [ ${QCOW2} ] || [ ${HYPERV} ] || [ ${VMWARE} ];   then QEMU=true; fi
-          echo "BUILD_QEMU=${QEMU}" >> $GITHUB_ENV
-          echo "BUILD_QCOW2=${QCOW2}" >> $GITHUB_ENV
-          echo "BUILD_HYPVERV=${HYPVERV}" >> $GITHUB_ENV
-          echo "BUILD_VMWARE=${VMWARE}" >> $GITHUB_ENV
+          if [ ${{ github.event.inputs.BUILD_QCOW2 }} ] || [ ${{ github.event.inputs.BUILD_HYPERV }} ] || [ ${{ github.event.inputs.BUILD_VMWARE }} ]
+            then
+            echo "BUILD_QEMU=true" | tee -a $GITHUB_ENV
+          else
+            echo "BUILD_QEMU=${{ github.event.inputs.BUILD_QEMU }}" | tee -a $GITHUB_ENV  
+          fi
+          echo "BUILD_QCOW2=${{ github.event.inputs.BUILD_QCOW2 }}"    | tee -a $GITHUB_ENV
+          echo "BUILD_HYPVERV=${{ github.event.inputs.BUILD_HYPERV }}" | tee -a $GITHUB_ENV
+          echo "BUILD_VMWARE=${{ github.event.inputs.BUILD_VMWARE }}"  | tee -a $GITHUB_ENV
 #if [ ${{ github.event.inputs. }} ]; then echo "" >> $GITHUB_ENV; fi
 
       - name: Get Version Number
