@@ -93,9 +93,11 @@ jobs:
           echo "CODE_VERSION=${{ steps.get-version.outputs.CODE_VERSION }}" >> $GITHUB_ENV
 
       - name: Configure Build
+        working-directory: ./${{ env.WORKING_DIR }}
         run: ./configure --architecture $BUILD_ARCH --build-by $BUILD_BY --build-type $BUILD_TYPE --version ${{ env.VERSION_STRING }}
 
       - name: Create Artifacts Dir
+        working-directory: ./${{ env.WORKING_DIR }}
         run: mkdir -p ./$ARTIFACTS_DIR
 
 ### Example
@@ -158,10 +160,10 @@ jobs:
           path: ${{ env.WORKING_DIR }}/${{ env.ARTIFACTS_DIR }}
 
     outputs:
-      VERSION_STRING: ${{ steps.set-build-names.outputs.VERSION_STRING }}
-      RELEASE_VERSION: ${{ steps.get-relver.outputs.RELEASE_VERSION }}
-      COMMIT_ID: ${{ steps.set-build-names.outputs.COMMIT_ID }}
-      CODE_VERSION: ${{ steps.get-version.outputs.CODE_VERSION }}
+      VERSION_STRING: ${{ env.VERSION_STRING }}
+      RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
+      COMMIT_ID: ${{ env.COMMIT_ID }}
+      CODE_VERSION: ${{ env.CODE_VERSION }}
 
 
 
