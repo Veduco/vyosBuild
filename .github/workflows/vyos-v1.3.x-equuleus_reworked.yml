@@ -41,7 +41,7 @@ env:
   #BUILD_QCOW2: false
   #BUILD_HYPERV: false
   #BUILD_VMWARE: false
-  PACKER_JSON_PATCH: false
+  PACKER_JSON_PATCH: true
   PACKER_JSON_PATCH_FILE: packer.json_wait-time_equuleus.patch
   VMWARE_OVFTOOL: VMware-ovftool-4.4.3-18663434-lin.x86_64.bundle
   VMWARE_PRIVATE_KEY: private_key_for_signing_vmware_image.pem
