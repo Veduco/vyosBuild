@@ -38,7 +38,8 @@ env:
   PACKER_JSON_PATCH: true
   PACKER_JSON_PATCH_FILE: packer.json_wait-time_equuleus.patch
   VMWARE_OVFTOOL: VMware-ovftool-4.4.3-18663434-lin.x86_64.bundle
-  VMWARE_PRIVATE_KEY: private_key_for_signing_vmware_image.pem
+  #VMWARE_PRIVATE_KEY: private_key_for_signing_vmware_image.pem
+  # The cert is stored in the secret SIGNINGCERT
   ARTIFACTS_DIR: artifacts
   WORKING_DIR: vyos-build
   STATUS_SUCCESS: "::set-output name=status::success"
@@ -58,7 +59,7 @@ jobs:
             then
             echo "BUILD_QEMU=true" | tee -a $GITHUB_ENV
           else
-            echo "BUILD_QEMU=${{ github.event.inputs.BUILD_QEMU }}" | tee -a $GITHUB_ENV  
+            echo "BUILD_QEMU=${{ github.event.inputs.BUILD_QEMU }}" | tee -a $GITHUB_ENV
           fi
           echo "BUILD_QCOW2=${{ github.event.inputs.BUILD_QCOW2 }}"    | tee -a $GITHUB_ENV
           echo "BUILD_HYPVERV=${{ github.event.inputs.BUILD_HYPERV }}" | tee -a $GITHUB_ENV
@@ -68,9 +69,9 @@ jobs:
       - name: Get Version Number
         id: get-version
         run: |
-          if [ ${{ github.event.inputs.branch }} == "crux" ]; then     echo ::set-output name=CODE_VERSION::1.2; fi
-          if [ ${{ github.event.inputs.branch }} == "equuleus" ]; then echo ::set-output name=CODE_VERSION::1.3; fi
-          if [ ${{ github.event.inputs.branch }} == "current" ]; then  echo ::set-output name=CODE_VERSION::1.4; fi
+          [ ${{ github.event.inputs.branch }} == "crux" ] && echo ::set-output name=CODE_VERSION::1.2
+          [ ${{ github.event.inputs.branch }} == "equuleus" ] && echo ::set-output name=CODE_VERSION::1.3
+          [ ${{ github.event.inputs.branch }} == "current" ] && echo ::set-output name=CODE_VERSION::1.4
 #steps.get-version.outputs.CODE_VERSION
  
       - name: Set Release Version
@@ -149,7 +150,8 @@ jobs:
         working-directory: ./${{ env.WORKING_DIR }}
         if: steps.qemu.outputs.status == 'success' && env.BUILD_VMWARE == 'true'
         run: |
-          export PRIVATE_KEY_PATH="$GITHUB_WORKSPACE/tools/$VMWARE_PRIVATE_KEY"
+          echo "${{ secrets.SIGNINGCERT }}" > $GITHUB_WORKSPACE/tools/VMWARE_PRIVATE_KEY
+          export PRIVATE_KEY_PATH="$GITHUB_WORKSPACE/tools/VMWARE_PRIVATE_KEY"
           chmod +x $GITHUB_WORKSPACE/tools/$VMWARE_OVFTOOL
           $GITHUB_WORKSPACE/tools/$VMWARE_OVFTOOL --eulas-agreed
           [ -e ./packer_build/qemu/vyos_qemu_image.img ] && make vmware
@@ -171,11 +173,6 @@ jobs:
       RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
       COMMIT_ID: ${{ env.COMMIT_ID }}
       CODE_VERSION: ${{ env.CODE_VERSION }}
-
-
-
-
-
 
   release:
     needs: build
