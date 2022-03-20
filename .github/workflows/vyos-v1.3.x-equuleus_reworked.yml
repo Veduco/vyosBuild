@@ -16,6 +16,9 @@ on:
         - crux
       commit:
         description: SHA1 Commit
+      BUILD_QEMU:
+        type: boolean
+        description: Build QEMU Image?
 
 env:
   GIT_CLONE_URL: https://github.com/vyos/vyos-build
@@ -49,9 +52,9 @@ jobs:
       - name: Get Version Number
         id: get-version
         run: |
-          if [ ${{ github.event.inputs.branch }} == "crux" ]; then echo ::set-output name=CODE_VERSION::1.2; fi
+          if [ ${{ github.event.inputs.branch }} == "crux" ]; then     echo ::set-output name=CODE_VERSION::1.2; fi
           if [ ${{ github.event.inputs.branch }} == "equuleus" ]; then echo ::set-output name=CODE_VERSION::1.3; fi
-          if [ ${{ github.event.inputs.branch }} == "current" ]; then echo ::set-output name=CODE_VERSION::1.4; fi
+          if [ ${{ github.event.inputs.branch }} == "current" ]; then  echo ::set-output name=CODE_VERSION::1.4; fi
 #steps.get-version.outputs.CODE_VERSION
  
       - name: Set Release Version
@@ -64,9 +67,10 @@ jobs:
 
       - name: Clone Source Code
         run: git clone -b ${{ github.event.inputs.branch }} --single-branch $GIT_CLONE_URL $WORKING_DIR
-          
+
       - name: Checkout Specific Commit
         working-directory: ./${{ env.WORKING_DIR }}
+        if: github.event.inputs.commit != ''
         run: git checkout ${{ github.event.inputs.commit }}
 
       - name: Set Build Names
@@ -77,10 +81,6 @@ jobs:
           export VERSION_STRING="${{ steps.get-relver.outputs.RELEASE_VERSION }}-${SHA1}"
           echo ::set-output name=VERSION_STRING::${{ steps.get-relver.outputs.RELEASE_VERSION }}-${SHA1}
           echo ::set-output name=COMMIT_ID::${SHA1}
-
-#echo "COMMIT_ID=${SHA1}" >> $GITHUB_ENV
-#echo "VERSION_STRING=${{ steps.get-relver.outputs.RELEASE_VERSION }}-${SHA1}">> $GITHUB_ENV
-
 #steps.set-build-names.outputs.COMMIT_ID
 #steps.set-build-names.outputs.VERSION_STRING
 
@@ -111,13 +111,6 @@ jobs:
         run: |
           make iso && echo $STATUS_SUCCESS
           cp -f ./build/vyos-${{ env.VERSION_STRING }}-$BUILD_ARCH.iso ./$ARTIFACTS_DIR/
-          echo Check localdir
-          ls -al ./
-          echo Check buildDir
-          ls -al ./build
-          echo Check artifacts dir
-          ls -al ./$ARTIFACTS_DIR/
-         #cp -f ./build/vyos-*-$BUILD_ARCH.iso ./$ARTIFACTS_DIR/
 
       - name: Build QEMU Image
         id: qemu
