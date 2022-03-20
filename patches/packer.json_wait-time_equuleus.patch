@@ -7,7 +7,7 @@ index f1e4979..da8e06a 100644
        "net_device": "virtio-net",
        "disk_interface": "virtio",
 -      "boot_wait": "5s",
-+      "boot_wait": "15s",
++      "boot_wait": "60s",
        "boot_command":
        [
 -        "<enter><wait3m>",
