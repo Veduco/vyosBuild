@@ -156,6 +156,7 @@ jobs:
         with:
           name: vyos-${{ env.VERSION_STRING }}-${{ env.BUILD_ARCH }}-images
           path: ${{ env.WORKING_DIR }}/${{ env.ARTIFACTS_DIR }}
+
     outputs:
       VERSION_STRING: ${{ steps.set-build-names.outputs.VERSION_STRING }}
       RELEASE_VERSION: ${{ steps.get-relver.outputs.RELEASE_VERSION }}
