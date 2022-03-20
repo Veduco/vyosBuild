@@ -7,6 +7,12 @@ name: VyOS Release
 on:
   workflow_dispatch:
     inputs:
+      BUILD_TYPE:
+        type: choice
+        description: Release or Dev Build
+        options:
+          - release
+          - development
       branch:
         type: choice
         description: Select the VyOS branch to build from
@@ -34,7 +40,7 @@ env:
   DEBIAN_MIRROR: http://ftp.us.debian.org/debian/
   BUILD_ARCH: amd64
   BUILD_BY: Veduco
-  BUILD_TYPE: release
+  #BUILD_TYPE: release
   PACKER_JSON_PATCH: true
   PACKER_JSON_PATCH_FILE: packer.json_wait-time_equuleus.patch
   VMWARE_OVFTOOL: VMware-ovftool-4.4.3-18663434-lin.x86_64.bundle
@@ -59,19 +65,19 @@ jobs:
             then
             echo "BUILD_QEMU=true" | tee -a $GITHUB_ENV
           else
-            echo "BUILD_QEMU=${{ github.event.inputs.BUILD_QEMU }}" | tee -a $GITHUB_ENV
+            echo "BUILD_QEMU=${{ github.event.inputs.BUILD_QEMU }}" | tee -a $GITHUB_ENV  
           fi
           echo "BUILD_QCOW2=${{ github.event.inputs.BUILD_QCOW2 }}"    | tee -a $GITHUB_ENV
           echo "BUILD_HYPVERV=${{ github.event.inputs.BUILD_HYPERV }}" | tee -a $GITHUB_ENV
           echo "BUILD_VMWARE=${{ github.event.inputs.BUILD_VMWARE }}"  | tee -a $GITHUB_ENV
-#if [ ${{ github.event.inputs. }} ]; then echo "" >> $GITHUB_ENV; fi
+#if [ ${{ github.event.inputs. }} ]; then echo "" | tee -a $GITHUB_ENV; fi
 
       - name: Get Version Number
         id: get-version
         run: |
-          [ ${{ github.event.inputs.branch }} == "crux" ] && echo ::set-output name=CODE_VERSION::1.2
-          [ ${{ github.event.inputs.branch }} == "equuleus" ] && echo ::set-output name=CODE_VERSION::1.3
-          [ ${{ github.event.inputs.branch }} == "current" ] && echo ::set-output name=CODE_VERSION::1.4
+          if [ ${{ github.event.inputs.branch }} == "crux" ]; then echo ::set-output name=CODE_VERSION::1.2; fi
+          if [ ${{ github.event.inputs.branch }} == "equuleus" ]; then echo ::set-output name=CODE_VERSION::1.3; fi
+          if [ ${{ github.event.inputs.branch }} == "current" ]; then  echo ::set-output name=CODE_VERSION::1.4; fi
 #steps.get-version.outputs.CODE_VERSION
  
       - name: Set Release Version
@@ -104,10 +110,11 @@ jobs:
       - name: Set Environment Names
         working-directory: ./${{ env.WORKING_DIR }}
         run: |
-          echo "BUILD_VERSION=${{ steps.set-build-names.outputs.BUILD_VERSION }}" >> $GITHUB_ENV
-          echo "RELEASE_VERSION=${{ steps.get-relver.outputs.RELEASE_VERSION }}" >> $GITHUB_ENV
-          echo "COMMIT_ID=${{ steps.set-build-names.outputs.COMMIT_ID }}" >> $GITHUB_ENV
-          echo "CODE_VERSION=${{ steps.get-version.outputs.CODE_VERSION }}" >> $GITHUB_ENV
+          echo "BUILD_VERSION=${{ steps.set-build-names.outputs.BUILD_VERSION }}" | tee -a $GITHUB_ENV
+          echo "RELEASE_VERSION=${{ steps.get-relver.outputs.RELEASE_VERSION }}" | tee -a $GITHUB_ENV
+          echo "COMMIT_ID=${{ steps.set-build-names.outputs.COMMIT_ID }}" | tee -a $GITHUB_ENV
+          echo "CODE_VERSION=${{ steps.get-version.outputs.CODE_VERSION }}" | tee -a $GITHUB_ENV
+          echo "BUILD_TYPE=${{ github.event.inputs.BUILD_TYPE }}" | tee -a $GITHUB_ENV
 
       - name: Configure Build
         working-directory: ./${{ env.WORKING_DIR }}
@@ -173,6 +180,7 @@ jobs:
       RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
       COMMIT_ID: ${{ env.COMMIT_ID }}
       CODE_VERSION: ${{ env.CODE_VERSION }}
+      BUILD_TYPE: ${{ env.BUILD_TYPE }}
 
   release:
     needs: build
