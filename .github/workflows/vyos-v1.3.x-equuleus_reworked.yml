@@ -38,7 +38,7 @@ env:
   BUILD_ARCH: amd64
   BUILD_BY: Veduco
   BUILD_TYPE: release
-  PACKER_JSON_PATCH: true
+  PACKER_JSON_PATCH: false
   PACKER_JSON_PATCH_FILE: packer.json_wait-time_equuleus.patch
   VMWARE_OVFTOOL: VMware-ovftool-4.4.3-18663434-lin.x86_64.bundle
   #VMWARE_PRIVATE_KEY: private_key_for_signing_vmware_image.pem
