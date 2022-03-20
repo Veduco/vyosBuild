@@ -7,12 +7,12 @@ name: VyOS Release
 on:
   workflow_dispatch:
     inputs:
-      BUILD_TYPE:
-        type: choice
-        description: Release or Dev Build
-        options:
-          - release
-          - development
+      #BUILD_TYPE:
+      #  type: choice
+      #  description: Release or Dev Build
+      #  options:
+      #    - release
+      #    - development
       branch:
         type: choice
         description: Select the VyOS branch to build from
@@ -40,7 +40,7 @@ env:
   DEBIAN_MIRROR: http://ftp.us.debian.org/debian/
   BUILD_ARCH: amd64
   BUILD_BY: Veduco
-  #BUILD_TYPE: release
+  BUILD_TYPE: release
   PACKER_JSON_PATCH: true
   PACKER_JSON_PATCH_FILE: packer.json_wait-time_equuleus.patch
   VMWARE_OVFTOOL: VMware-ovftool-4.4.3-18663434-lin.x86_64.bundle
@@ -114,7 +114,7 @@ jobs:
           echo "RELEASE_VERSION=${{ steps.get-relver.outputs.RELEASE_VERSION }}" | tee -a $GITHUB_ENV
           echo "COMMIT_ID=${{ steps.set-build-names.outputs.COMMIT_ID }}" | tee -a $GITHUB_ENV
           echo "CODE_VERSION=${{ steps.get-version.outputs.CODE_VERSION }}" | tee -a $GITHUB_ENV
-          echo "BUILD_TYPE=${{ github.event.inputs.BUILD_TYPE }}" | tee -a $GITHUB_ENV
+#echo "BUILD_TYPE=${{ github.event.inputs.BUILD_TYPE }}" | tee -a $GITHUB_ENV
 
       - name: Configure Build
         working-directory: ./${{ env.WORKING_DIR }}
