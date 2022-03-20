@@ -185,9 +185,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: VyOS v${{ env.CODE_VERSION }} [${{ env.COMMIT_ID }}]
-          body: VyOS v${{ env.CODE_VERSION }} [${{ env.COMMIT_ID }}]
-          tag_name: ${{ env.VERSION_STRING }}
+          name: VyOS v${{ needs.build.outputs.CODE_VERSION }} [${{ needs.build.outputs.COMMIT_ID }}]
+          body: VyOS v${{ needs.build.outputs.CODE_VERSION }} [${{ needs.build.outputs.COMMIT_ID }}]
+          tag_name: ${{ needs.build.outputs.VERSION_STRING }}
           draft: false
           prerelease: false
           files: |
