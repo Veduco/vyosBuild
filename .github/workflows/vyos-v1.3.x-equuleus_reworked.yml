@@ -18,11 +18,11 @@ on:
         type: choice
         description: Select the images to build
         options:
-          - ISO Only
-          - QEMU
-          - HyperV
-          - VMWare
-          - All
+        - ISO Only
+        - QEMU
+        - HyperV
+        - VMWare
+        - All
 
 env:
   GIT_CLONE_URL: https://github.com/vyos/vyos-build
