@@ -7,9 +7,9 @@ on:
         type: choice
         description: Select the VyOS branch to build from
         options: 
-        - equuleus
-        - current
-        - crux
+          - equuleus
+          - current
+          - crux
       commit:
         description: SHA1 Commit
       version:
@@ -18,11 +18,11 @@ on:
         type: choice
         description: Select the images to build
         options:
-        - ISO Only
-        - QEMU
-        - HyperV
-        - VMWare
-        - All
+          - ISO Only
+          - QEMU
+          - HyperV
+          - VMWare
+          - All
 
 env:
   GIT_CLONE_URL: https://github.com/vyos/vyos-build
@@ -167,7 +167,7 @@ jobs:
           cp -f ./build/vyos_vmware_image.vmdk ./$ARTIFACTS_DIR/vyos-${{ env.BUILD_VERSION }}-$BUILD_ARCH-vmware.vmdk
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: vyos-${{ env.BUILD_VERSION }}-${{ env.BUILD_ARCH }}-images
           path: ${{ env.WORKING_DIR }}/${{ env.ARTIFACTS_DIR }}
@@ -186,7 +186,7 @@ jobs:
 
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: vyos-${{ needs.build.outputs.BUILD_VERSION }}-${{ env.BUILD_ARCH }}-images
 
