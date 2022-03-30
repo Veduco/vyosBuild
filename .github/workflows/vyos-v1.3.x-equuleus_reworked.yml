@@ -50,18 +50,18 @@ jobs:
 
       - name: Check Image Dependencies
         run: |
-          if [ "${{ github.events.inputs.buildimages }}" == "QEMU" ]
+          if [ "${{ github.event.inputs.buildimages }}" == "QEMU" ]
             then
             echo "BUILD_QEMU=true" | tee -a $GITHUB_ENV
-          elif [ "${{ github.events.inputs.buildimages }}" == "HyperV" ]
+          elif [ "${{ github.event.inputs.buildimages }}" == "HyperV" ]
             then
             echo "BUILD_QEMU=true" | tee -a $GITHUB_ENV
             echo "BUILD_HYPVERV=true" | tee -a $GITHUB_ENV
-          elif [ "${{ github.events.inputs.buildimages }}" == "VMWare" ]
+          elif [ "${{ github.event.inputs.buildimages }}" == "VMWare" ]
             then
             echo "BUILD_QEMU=true" | tee -a $GITHUB_ENV
             echo "BUILD_VMWARE=true" | tee -a $GITHUB_ENV
-          elif [ "${{ github.events.inputs.buildimages }}" == "All" ]
+          elif [ "${{ github.event.inputs.buildimages }}" == "All" ]
             then
             echo "BUILD_QEMU=true" | tee -a $GITHUB_ENV
             echo "BUILD_HYPVERV=true" | tee -a $GITHUB_ENV
