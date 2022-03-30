@@ -14,7 +14,7 @@ on:
         description: SHA1 Commit
       version:
         description: Custom version string [ "VyOS $string" ]
-      build_images:
+      buildimages:
         type: choice
         description: Select the images to build
         options:
@@ -50,18 +50,18 @@ jobs:
 
       - name: Check Image Dependencies
         run: |
-          if [ ${{ github.events.inputs.build_images }} == "QEMU" ]
+          if [ "${{ github.events.inputs.buildimages }}" == "QEMU" ]
             then
             echo "BUILD_QEMU=true" | tee -a $GITHUB_ENV
-          else if [ ${{ github.events.inputs.build_images }} == "HyperV" ]
+          elif [ "${{ github.events.inputs.buildimages }}" == "HyperV" ]
             then
             echo "BUILD_QEMU=true" | tee -a $GITHUB_ENV
             echo "BUILD_HYPVERV=true" | tee -a $GITHUB_ENV
-          else if [ ${{ github.events.inputs.build_images }} == "VMWare" ]
+          elif [ "${{ github.events.inputs.buildimages }}" == "VMWare" ]
             then
             echo "BUILD_QEMU=true" | tee -a $GITHUB_ENV
             echo "BUILD_VMWARE=true" | tee -a $GITHUB_ENV
-          else if [ ${{ github.events.inputs.build_images }} == "All" ]
+          elif [ "${{ github.events.inputs.buildimages }}" == "All" ]
             then
             echo "BUILD_QEMU=true" | tee -a $GITHUB_ENV
             echo "BUILD_HYPVERV=true" | tee -a $GITHUB_ENV
