@@ -13,12 +13,12 @@ on:
       commit:
         description: SHA1 Commit
       version:
-        description: Custom version string [ VyOS $string ]
+        description: Custom version string [ "VyOS $string" ]
       build_images:
         type: choice
         description: Select the images to build
         options:
-          - ISO
+          - ISO Only
           - QEMU
           - HyperV
           - VMWare
