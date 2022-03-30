@@ -56,7 +56,7 @@ jobs:
           elif [ "${{ github.event.inputs.buildimages }}" == "HyperV" ]
             then
             echo "BUILD_QEMU=true" | tee -a $GITHUB_ENV
-            echo "BUILD_HYPVERV=true" | tee -a $GITHUB_ENV
+            echo "BUILD_HYPERV=true" | tee -a $GITHUB_ENV
           elif [ "${{ github.event.inputs.buildimages }}" == "VMWare" ]
             then
             echo "BUILD_QEMU=true" | tee -a $GITHUB_ENV
@@ -64,7 +64,7 @@ jobs:
           elif [ "${{ github.event.inputs.buildimages }}" == "All" ]
             then
             echo "BUILD_QEMU=true" | tee -a $GITHUB_ENV
-            echo "BUILD_HYPVERV=true" | tee -a $GITHUB_ENV
+            echo "BUILD_HYPERV=true" | tee -a $GITHUB_ENV
             echo "BUILD_VMWARE=true" | tee -a $GITHUB_ENV
           fi
 
