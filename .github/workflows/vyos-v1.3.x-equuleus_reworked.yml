@@ -106,11 +106,11 @@ jobs:
       - name: Set Environment Names
         working-directory: ./${{ env.WORKING_DIR }}
         run: |
-          if [ ${{ github.event.inputs.version }} != '' ] && [ ! -z ${{ github.event.inputs.version }} ]
+          if [ "${{ github.event.inputs.version }}" != '' ] && [ ! -z "${{ github.event.inputs.version }}" ]
             then
-            echo "BUILD_VERSION=${{ github.event.inputs.version }}" | tee -a $GITHUB_ENV
+            echo "BUILD_VERSION=${{ github.event.inputs.version }}" | sed 's/\s//g' | tee -a $GITHUB_ENV
           else
-            echo "BUILD_VERSION=${{ steps.set-build-names.outputs.BUILD_VERSION }}" | tee -a $GITHUB_ENV
+            echo "BUILD_VERSION=${{ steps.set-build-names.outputs.BUILD_VERSION }}" | sed 's/\s//g' | tee -a $GITHUB_ENV
           fi
 
           echo "RELEASE_VERSION=${{ steps.get-relver.outputs.RELEASE_VERSION }}" | tee -a $GITHUB_ENV
@@ -174,10 +174,10 @@ jobs:
 
     outputs:
       BUILD_VERSION: ${{ env.BUILD_VERSION }}
-      RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
+      #RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
       COMMIT_ID: ${{ env.COMMIT_ID }}
       CODE_VERSION: ${{ env.CODE_VERSION }}
-      BUILD_TYPE: ${{ env.BUILD_TYPE }}
+      #BUILD_TYPE: ${{ env.BUILD_TYPE }}
 
   release:
     needs: build
