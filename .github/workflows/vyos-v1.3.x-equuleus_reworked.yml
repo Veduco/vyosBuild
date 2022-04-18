@@ -99,9 +99,9 @@ jobs:
         id: set-build-names
         working-directory: ./${{ env.WORKING_DIR }}
         run: |
+          export SHA1=$(git rev-parse --short HEAD)
           echo ::set-output name=BUILD_VERSION::${{ steps.get-relver.outputs.RELEASE_VERSION }}-${SHA1}
           echo ::set-output name=COMMIT_ID::${SHA1}
-#export SHA1=$(git rev-parse --short HEAD)
 #export BUILD_VERSION="${{ steps.get-relver.outputs.RELEASE_VERSION }}-${SHA1}"
 #steps.set-build-names.outputs.COMMIT_ID
 #steps.set-build-names.outputs.BUILD_VERSION
