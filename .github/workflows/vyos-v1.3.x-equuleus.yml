@@ -175,12 +175,11 @@ jobs:
       #    name: vyos-${{ env.BUILD_VERSION }}-${{ env.BUILD_ARCH }}-images
       #    path: ${{ env.WORKING_DIR }}/${{ env.ARTIFACTS_DIR }}
  
-      - name: Move data
-        run: mv -f ./${{ env.WORKING_DIR }}/${{ env.ARTIFACTS_DIR }}/* ./
+      - name: Move data to final location
+        run: |
+          ls -al ./${{ env.WORKING_DIR }}/${{ env.ARTIFACTS_DIR }}/
+          mv -f ./${{ env.WORKING_DIR }}/${{ env.ARTIFACTS_DIR }}/* ./
  
-      - name: Cleanup
-        run: rm -rf ${{ env.WORKING_DIR }}
-
     outputs:
       BUILD_VERSION: ${{ env.BUILD_VERSION }}
       #RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
