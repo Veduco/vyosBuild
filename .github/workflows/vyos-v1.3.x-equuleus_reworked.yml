@@ -48,6 +48,9 @@ jobs:
 
     steps:
 
+      - name: Set Start Time
+        run: echo "START_TIME=$(date -u +%Y%m%d%H%M)" | tee -a $GITHUB_ENV
+        
       - name: Check Image Dependencies
         run: |
           if [ "${{ github.event.inputs.buildimages }}" == "QEMU" ]
@@ -178,6 +181,7 @@ jobs:
       COMMIT_ID: ${{ env.COMMIT_ID }}
       CODE_VERSION: ${{ env.CODE_VERSION }}
       #BUILD_TYPE: ${{ env.BUILD_TYPE }}
+      START_TIME: ${{ env.START_TIME }}
 
   release:
     needs: build
@@ -196,7 +200,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           name: VyOS v${{ needs.build.outputs.CODE_VERSION }} [${{ needs.build.outputs.COMMIT_ID }}]
-          body: VyOS v${{ needs.build.outputs.CODE_VERSION }} [${{ needs.build.outputs.COMMIT_ID }}]
+          body: VyOS v${{ needs.build.outputs.CODE_VERSION }} [${{ needs.build.outputs.COMMIT_ID }}] built at ${{ needs.build.outputs.START_TIME }}
           tag_name: ${{ needs.build.outputs.BUILD_VERSION }}
           draft: false
           prerelease: false
