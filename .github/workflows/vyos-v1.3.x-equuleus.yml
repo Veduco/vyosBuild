@@ -179,6 +179,7 @@ jobs:
         run: |
           ls -al ./${{ env.WORKING_DIR }}/${{ env.ARTIFACTS_DIR }}/
           mv -f ./${{ env.WORKING_DIR }}/${{ env.ARTIFACTS_DIR }}/* ./
+          chmod 644 ./vyos-${{ env.BUILD_VERSION }}-$BUILD_ARCH-vmware-signed.ova
  
     outputs:
       BUILD_VERSION: ${{ env.BUILD_VERSION }}
