@@ -11,7 +11,7 @@ on:
           - current
           - crux
       commit:
-        description: SHA1 Commit
+        description: vyos/vyos-build Commit SHA1
       version:
         description: Custom version string [ "VyOS $string" ]
       buildimages:
@@ -111,7 +111,7 @@ jobs:
         run: |
           if [ "${{ github.event.inputs.version }}" != '' ] && [ ! -z "${{ github.event.inputs.version }}" ]
             then
-            echo "BUILD_VERSION=${{ github.event.inputs.version }}-${{ env.START_TIME }}" | sed 's/\s//g' | tee -a $GITHUB_ENV
+            echo "BUILD_VERSION=${{ github.event.inputs.version }}" | sed 's/\s//g' | tee -a $GITHUB_ENV
           else
             echo "BUILD_VERSION=${{ steps.set-build-names.outputs.BUILD_VERSION }}-${{ env.START_TIME }}" | sed 's/\s//g' | tee -a $GITHUB_ENV
           fi
