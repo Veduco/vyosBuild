@@ -99,10 +99,10 @@ jobs:
         id: set-build-names
         working-directory: ./${{ env.WORKING_DIR }}
         run: |
-          export SHA1=$(git rev-parse --short HEAD)
-          export BUILD_VERSION="${{ steps.get-relver.outputs.RELEASE_VERSION }}-${SHA1}"
           echo ::set-output name=BUILD_VERSION::${{ steps.get-relver.outputs.RELEASE_VERSION }}-${SHA1}
           echo ::set-output name=COMMIT_ID::${SHA1}
+#export SHA1=$(git rev-parse --short HEAD)
+#export BUILD_VERSION="${{ steps.get-relver.outputs.RELEASE_VERSION }}-${SHA1}"
 #steps.set-build-names.outputs.COMMIT_ID
 #steps.set-build-names.outputs.BUILD_VERSION
 
@@ -111,9 +111,9 @@ jobs:
         run: |
           if [ "${{ github.event.inputs.version }}" != '' ] && [ ! -z "${{ github.event.inputs.version }}" ]
             then
-            echo "BUILD_VERSION=${{ github.event.inputs.version }}" | sed 's/\s//g' | tee -a $GITHUB_ENV
+            echo "BUILD_VERSION=${{ github.event.inputs.version }}-${{ env.START_TIME }}" | sed 's/\s//g' | tee -a $GITHUB_ENV
           else
-            echo "BUILD_VERSION=${{ steps.set-build-names.outputs.BUILD_VERSION }}" | sed 's/\s//g' | tee -a $GITHUB_ENV
+            echo "BUILD_VERSION=${{ steps.set-build-names.outputs.BUILD_VERSION }}-${{ env.START_TIME }}" | sed 's/\s//g' | tee -a $GITHUB_ENV
           fi
 
           echo "RELEASE_VERSION=${{ steps.get-relver.outputs.RELEASE_VERSION }}" | tee -a $GITHUB_ENV
