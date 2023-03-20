@@ -1,0 +1,213 @@
+name: VyOS Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        type: choice
+        description: Select the VyOS branch to build from
+        options: 
+          - equuleus
+          - current
+          - crux
+      commit:
+        description: SHA1 Commit
+      version:
+        description: Custom version string [ "VyOS $string" ]
+      buildimages:
+        type: choice
+        description: Select the images to build
+        options:
+          - ISO Only
+          - All
+          - VMWare
+          - HyperV
+          - QEMU
+
+env:
+  GIT_CLONE_URL: https://github.com/vyos/vyos-build
+  DEBIAN_MIRROR: http://ftp.us.debian.org/debian/
+  BUILD_ARCH: amd64
+  BUILD_BY: Veduco
+  BUILD_TYPE: release
+  PACKER_JSON_PATCH: true
+  PACKER_JSON_PATCH_FILE: packer.json_wait-time_equuleus.patch
+  VMWARE_OVFTOOL: VMware-ovftool-4.4.3-18663434-lin.x86_64.bundle
+  #VMWARE_PRIVATE_KEY: private_key_for_signing_vmware_image.pem  # The cert is stored in the secret SIGNINGCERT
+  ARTIFACTS_DIR: artifacts
+  WORKING_DIR: vyos-build
+  STATUS_SUCCESS: "::set-output name=status::success"
+
+jobs:
+  build:
+    #runs-on: ubuntu-latest
+    runs-on: [self-hosted]
+    container:
+      image: vyos/vyos-build:equuleus
+      options: --workdir /vyos --privileged
+
+    steps:
+
+      - name: Set Start Time
+        run: echo "START_TIME=$(date -u +%Y%m%d%H%M)" | tee -a $GITHUB_ENV
+        
+      - name: Check Image Dependencies
+        run: |
+          if [ "${{ github.event.inputs.buildimages }}" == "QEMU" ]
+            then
+            echo "BUILD_QEMU=true" | tee -a $GITHUB_ENV
+          elif [ "${{ github.event.inputs.buildimages }}" == "HyperV" ]
+            then
+            echo "BUILD_QEMU=true" | tee -a $GITHUB_ENV
+            echo "BUILD_HYPERV=true" | tee -a $GITHUB_ENV
+          elif [ "${{ github.event.inputs.buildimages }}" == "VMWare" ]
+            then
+            echo "BUILD_QEMU=true" | tee -a $GITHUB_ENV
+            echo "BUILD_VMWARE=true" | tee -a $GITHUB_ENV
+          elif [ "${{ github.event.inputs.buildimages }}" == "All" ]
+            then
+            echo "BUILD_QEMU=true" | tee -a $GITHUB_ENV
+            echo "BUILD_HYPERV=true" | tee -a $GITHUB_ENV
+            echo "BUILD_VMWARE=true" | tee -a $GITHUB_ENV
+          fi
+
+      - name: Get Version Number
+        id: get-version
+        run: |
+          if [ ${{ github.event.inputs.branch }} == "crux" ];     then echo "CODE_VERSION=1.2" | tee -a $GITHUB_ENV; fi
+          if [ ${{ github.event.inputs.branch }} == "equuleus" ]; then echo "CODE_VERSION=1.3" | tee -a $GITHUB_ENV; fi
+          if [ ${{ github.event.inputs.branch }} == "current" ];  then echo "CODE_VERSION=1.4" | tee -a $GITHUB_ENV; fi
+#steps.get-version.outputs.CODE_VERSION
+ 
+      - name: Set Release Version
+        id: get-relver
+        run: echo "RELEASE_VERSION=${{ env.CODE_VERSION }}-${{ github.event.inputs.branch }}" | tee -a $GITHUB_ENV
+#steps.get-relver.outputs.RELEASE_VERSION
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Clone Source Code
+        run: git clone -b ${{ github.event.inputs.branch }} --single-branch $GIT_CLONE_URL $WORKING_DIR
+
+      - name: Checkout Specific Commit
+        working-directory: ./${{ env.WORKING_DIR }}
+        if: github.event.inputs.commit != ''
+        run: git checkout ${{ github.event.inputs.commit }}
+
+      - name: Set Build Names
+        id: set-build-names
+        working-directory: ./${{ env.WORKING_DIR }}
+        run: |
+          export SHA1=$(git rev-parse --short HEAD)
+          echo "BUILD_VERSION_BASE=${{ env.RELEASE_VERSION }}-${SHA1}" | tee -a $GITHUB_ENV
+          echo "COMMIT_ID=${SHA1}" | tee -a $GITHUB_ENV
+#export BUILD_VERSION="${{ env.RELEASE_VERSION }}-${SHA1}"
+#steps.set-build-names.outputs.COMMIT_ID
+#steps.set-build-names.outputs.BUILD_VERSION
+
+      - name: Set Environment Names
+        working-directory: ./${{ env.WORKING_DIR }}
+        run: |
+          if [ "${{ github.event.inputs.version }}" != '' ] && [ ! -z "${{ github.event.inputs.version }}" ]
+            then
+            echo "BUILD_VERSION=${{ github.event.inputs.version }}-${{ env.START_TIME }}" | sed 's/\s//g' | tee -a $GITHUB_ENV
+          else
+            echo "BUILD_VERSION=${{ env.BUILD_VERSION_BASE }}-${{ env.START_TIME }}" | sed 's/\s//g' | tee -a $GITHUB_ENV
+          fi
+#echo "BUILD_TYPE=${{ github.event.inputs.BUILD_TYPE }}" | tee -a $GITHUB_ENV
+
+      - name: Configure Build
+        working-directory: ./${{ env.WORKING_DIR }}
+        run: ./configure --architecture $BUILD_ARCH --build-by $BUILD_BY --build-type $BUILD_TYPE --version ${{ env.BUILD_VERSION }}
+
+      - name: Create Artifacts Dir
+        working-directory: ./${{ env.WORKING_DIR }}
+        run: mkdir -p ./$ARTIFACTS_DIR
+
+      - name: Build ISO Image
+        id: iso
+        working-directory: ./${{ env.WORKING_DIR }}
+        run: |
+          make iso && echo "ISOstatus=success" | tee -a $GITHUB_STATE
+          cp -f ./build/vyos-${{ env.BUILD_VERSION }}-$BUILD_ARCH.iso ./$ARTIFACTS_DIR/
+
+      - name: Build QEMU Image
+        id: qemu
+        working-directory: ./${{ env.WORKING_DIR }}
+        if: steps.iso.outputs.status == 'success' && env.BUILD_QEMU == 'true'
+        run: |
+          [ $PACKER_JSON_PATCH = true ] && git apply $GITHUB_WORKSPACE/patches/$PACKER_JSON_PATCH_FILE
+          [ -e ./build/live-image-$BUILD_ARCH.hybrid.iso ] && make qemu && echo "QEMUstatus=success" | tee -a $GITHUB_STATE
+          cp -f ./packer_build/qemu/vyos_qemu_image.img ./$ARTIFACTS_DIR/vyos-${{ env.BUILD_VERSION }}-$BUILD_ARCH-qemu.img
+          cp -f ./build/vyos-${{ env.BUILD_VERSION }}-$BUILD_ARCH.qcow2 ./$ARTIFACTS_DIR/vyos-${{ env.BUILD_VERSION }}-$BUILD_ARCH-qemu.qcow2
+
+      - name: Build Hyper-V Image
+        working-directory: ./${{ env.WORKING_DIR }}
+        if: steps.qemu.outputs.status == 'success' && env.BUILD_HYPERV == 'true'
+        run: |
+          [ -e ./packer_build/qemu/vyos_qemu_image.img ] && make hyperv
+          cp -f ./packer_build/hyperv/vyos_hyperv_image.vhd ./$ARTIFACTS_DIR/vyos-${{ env.BUILD_VERSION }}-$BUILD_ARCH-hyperv.vhd
+
+      - name: Build VMware Image
+        working-directory: ./${{ env.WORKING_DIR }}
+        if: steps.qemu.outputs.status == 'success' && env.BUILD_VMWARE == 'true'
+        run: |
+          echo "${{ secrets.SIGNINGCERT }}" > $GITHUB_WORKSPACE/tools/VMWARE_PRIVATE_KEY
+          export PRIVATE_KEY_PATH="$GITHUB_WORKSPACE/tools/VMWARE_PRIVATE_KEY"
+          chmod +x $GITHUB_WORKSPACE/tools/$VMWARE_OVFTOOL
+          $GITHUB_WORKSPACE/tools/$VMWARE_OVFTOOL --eulas-agreed
+          [ -e ./packer_build/qemu/vyos_qemu_image.img ] && make vmware
+          cp -f ./build/vyos_vmware_image-signed.cert ./$ARTIFACTS_DIR/
+          cp -f ./build/vyos_vmware_image-signed-disk1.vmdk ./$ARTIFACTS_DIR/
+          cp -f ./build/vyos_vmware_image-signed.mf ./$ARTIFACTS_DIR/
+          cp -f ./build/vyos_vmware_image-signed.ovf ./$ARTIFACTS_DIR/
+          cp -f ./build/vyos_vmware_image-signed.ova ./$ARTIFACTS_DIR/vyos-${{ env.BUILD_VERSION }}-$BUILD_ARCH-vmware-signed.ova
+          cp -f ./build/vyos_vmware_image.vmdk ./$ARTIFACTS_DIR/vyos-${{ env.BUILD_VERSION }}-$BUILD_ARCH-vmware.vmdk
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: vyos-${{ env.BUILD_VERSION }}-${{ env.BUILD_ARCH }}-images
+          path: ${{ env.WORKING_DIR }}/${{ env.ARTIFACTS_DIR }}
+
+      - name: Cleanup
+        working-directory: ./${{ env.WORKING_DIR }}
+        run: make purge && echo "$(pwd)"
+
+    outputs:
+      BUILD_VERSION: ${{ env.BUILD_VERSION }}
+      #RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
+      COMMIT_ID: ${{ env.COMMIT_ID }}
+      CODE_VERSION: ${{ env.CODE_VERSION }}
+      #BUILD_TYPE: ${{ env.BUILD_TYPE }}
+      START_TIME: ${{ env.START_TIME }}
+
+  release:
+    needs: build
+    #runs-on: ubuntu-latest
+    runs-on: [self-hosted]
+
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: vyos-${{ needs.build.outputs.BUILD_VERSION }}-${{ env.BUILD_ARCH }}-images
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: VyOS v${{ needs.build.outputs.CODE_VERSION }} [${{ needs.build.outputs.COMMIT_ID }}]
+          body: VyOS v${{ needs.build.outputs.CODE_VERSION }} [${{ needs.build.outputs.COMMIT_ID }}] built at ${{ needs.build.outputs.START_TIME }}
+          tag_name: ${{ needs.build.outputs.BUILD_VERSION }}
+          draft: false
+          prerelease: false
+          files: |
+            vyos-${{ needs.build.outputs.BUILD_VERSION }}-${{ env.BUILD_ARCH }}.iso
+            vyos-${{ needs.build.outputs.BUILD_VERSION }}-${{ env.BUILD_ARCH }}-qemu.img
+            vyos-${{ needs.build.outputs.BUILD_VERSION }}-${{ env.BUILD_ARCH }}-qemu.qcow2
+            vyos-${{ needs.build.outputs.BUILD_VERSION }}-${{ env.BUILD_ARCH }}-hyperv.vhd
+            vyos-${{ needs.build.outputs.BUILD_VERSION }}-${{ env.BUILD_ARCH }}-vmware-signed.ova
+            vyos-${{ needs.build.outputs.BUILD_VERSION }}-${{ env.BUILD_ARCH }}-vmware.vmdk
