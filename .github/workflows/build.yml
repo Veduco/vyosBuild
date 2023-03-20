@@ -1,4 +1,4 @@
-name: VyOS Release
+name: Build VyOS Release
 
 on:
   workflow_dispatch:
