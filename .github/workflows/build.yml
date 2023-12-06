@@ -8,6 +8,7 @@ on:
         description: Select the VyOS branch to build from
         options: 
           - equuleus
+          - sagitta
           - current
           - crux
       commit:
