@@ -74,10 +74,10 @@ jobs:
       - name: Get Version Number
         id: get-version
         run: |
-          if [ "${{ github.event.inputs.branch }}" == "crux" ];     then echo "CODE_VERSION=1.2" | tee -a $GITHUB_OUTPUT; fi
-          if [ "${{ github.event.inputs.branch }}" == "equuleus" ]; then echo "CODE_VERSION=1.3" | tee -a $GITHUB_OUTPUT; fi
-          if [ "${{ github.event.inputs.branch }}" == "sagitta" ];  then echo "CODE_VERSION=1.4" | tee -a $GITHUB_OUTPUT; fi
-          if [ "${{ github.event.inputs.branch }}" == "current" ];  then echo "CODE_VERSION=1.5" | tee -a $GITHUB_OUTPUT; fi
+          if [ "${{ github.event.inputs.branch }}" = "crux" ];     then echo "CODE_VERSION=1.2" | tee -a $GITHUB_OUTPUT; fi
+          if [ "${{ github.event.inputs.branch }}" = "equuleus" ]; then echo "CODE_VERSION=1.3" | tee -a $GITHUB_OUTPUT; fi
+          if [ "${{ github.event.inputs.branch }}" = "sagitta" ];  then echo "CODE_VERSION=1.4" | tee -a $GITHUB_OUTPUT; fi
+          if [ "${{ github.event.inputs.branch }}" = "current" ];  then echo "CODE_VERSION=1.5" | tee -a $GITHUB_OUTPUT; fi
 #steps.get-version.outputs.CODE_VERSION
  
       - name: Set Release Version
