@@ -134,7 +134,7 @@ jobs:
         id: iso
         working-directory: ./${{ env.WORKING_DIR }}
         run: |
-          ./build-vyos-image --architecture $BUILD_ARCH --build-by $BUILD_BY --build-type $BUILD_TYPE --version ${{ env.BUILD_VERSION }} && echo "status=success" | tee -a $GITHUB_OUTPUT
+          ./build-vyos-image iso --architecture $BUILD_ARCH --build-by $BUILD_BY --build-type $BUILD_TYPE --version ${{ env.BUILD_VERSION }} && echo "status=success" | tee -a $GITHUB_OUTPUT
           cp -f ./build/vyos-${{ env.BUILD_VERSION }}-$BUILD_ARCH.iso ./$ARTIFACTS_DIR/
 
       - name: Build QEMU Image
