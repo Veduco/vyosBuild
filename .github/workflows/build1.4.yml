@@ -9,7 +9,7 @@ on:
         options: 
           #- equuleus
           - sagitta
-          - current
+          #- current
           #- crux
       commit:
         description: SHA1 Commit
@@ -20,10 +20,10 @@ on:
         description: Select the images to build
         options:
           - ISO Only
-          #- All
-          #- VMWare
-          #- HyperV
-          #- QEMU
+          - All
+          - VMWare
+          - HyperV
+          - QEMU
 
 env:
   GIT_CLONE_URL: https://github.com/vyos/vyos-build
